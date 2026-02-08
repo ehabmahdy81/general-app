@@ -1,0 +1,560 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>متتبع الإحسان اليومي</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', 'Dubai', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 10px;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px 20px;
+            text-align: center;
+        }
+        .header h1 { font-size: 2em; margin-bottom: 10px; }
+        
+        /* Period Tabs */
+        .period-tabs {
+            display: flex;
+            gap: 10px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-bottom: 3px solid #e0e0e0;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        .period-tab {
+            padding: 15px 30px;
+            background: white;
+            border: 3px solid #e0e0e0;
+            border-radius: 15px;
+            cursor: pointer;
+            font-size: 1.1em;
+            transition: all 0.3s;
+            font-weight: 700;
+            min-width: 200px;
+            text-align: center;
+        }
+        .period-tab.active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-color: #667eea;
+        }
+        .period-tab-icon { font-size: 1.5em; display: block; margin-bottom: 5px; }
+        
+        /* Main Tabs */
+        .tabs {
+            display: flex;
+            gap: 5px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-bottom: 2px solid #e0e0e0;
+            overflow-x: auto;
+        }
+        .tab {
+            padding: 12px 20px;
+            background: white;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 0.95em;
+            transition: all 0.3s;
+            font-weight: 600;
+            white-space: nowrap;
+        }
+        .tab.active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        .tab-content { display: none; padding: 20px; }
+        .tab-content.active { display: block; }
+        
+        /* Question Card */
+        .question-card {
+            background: #f8f9fa;
+            padding: 25px;
+            border-radius: 15px;
+            margin-bottom: 20px;
+            border-right: 5px solid #667eea;
+        }
+        .question-text {
+            font-size: 1.2em;
+            font-weight: 600;
+            margin-bottom: 20px;
+            line-height: 1.6;
+        }
+        .question-number {
+            display: inline-block;
+            background: #667eea;
+            color: white;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 0.9em;
+            margin-bottom: 10px;
+        }
+        
+        /* Slider */
+        .answer-slider {
+            width: 100%;
+            height: 12px;
+            -webkit-appearance: none;
+            background: linear-gradient(90deg, #10b981 0%, #fbbf24 50%, #ef4444 100%);
+            outline: none;
+            border-radius: 10px;
+            cursor: pointer;
+        }
+        .answer-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 30px;
+            height: 30px;
+            background: white;
+            border: 4px solid #667eea;
+            border-radius: 50%;
+            cursor: pointer;
+        }
+        .slider-value {
+            text-align: center;
+            font-size: 1.8em;
+            font-weight: 700;
+            color: #667eea;
+            margin-top: 15px;
+        }
+        .slider-labels {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 10px;
+            font-size: 0.9em;
+            color: #666;
+        }
+        
+        /* Save Button */
+        .save-btn {
+            width: 100%;
+            padding: 18px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 1.3em;
+            cursor: pointer;
+            margin-top: 30px;
+            font-weight: 700;
+        }
+        
+        /* Stats */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+        }
+        .stat-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 15px;
+            text-align: center;
+        }
+        .stat-emoji { font-size: 2.5em; margin-bottom: 10px; }
+        .stat-value { font-size: 2em; font-weight: 700; margin: 10px 0; }
+        
+        /* Progress */
+        .progress-section { background: #f8f9fa; padding: 25px; border-radius: 15px; }
+        .section-title { font-size: 1.8em; margin-bottom: 20px; text-align: center; font-weight: 700; }
+        .progress-bar-wrapper { margin-bottom: 20px; }
+        .progress-label {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+        .progress-bar {
+            height: 35px;
+            background: #e0e0e0;
+            border-radius: 20px;
+            overflow: hidden;
+        }
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 700;
+            transition: width 0.5s ease;
+        }
+        
+        /* History */
+        .history-item {
+            background: white;
+            padding: 20px;
+            border-radius: 15px;
+            margin-bottom: 15px;
+            border-right: 5px solid #667eea;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .history-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        .delete-btn {
+            background: #ef4444;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+        
+        .chart-container {
+            background: white;
+            padding: 20px;
+            border-radius: 15px;
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📊 متتبع الإحسان اليومي</h1>
+            <p>قيّم مستواك في المنازل السبعة خلال اليوم</p>
+        </div>
+
+        <div class="period-tabs">
+            <div class="period-tab active" data-period="work" onclick="switchPeriod('work')">
+                <span class="period-tab-icon">💼</span>
+                <div>خلال ساعات العمل</div>
+                <small>(8 ساعات)</small>
+            </div>
+            <div class="period-tab" data-period="outside" onclick="switchPeriod('outside')">
+                <span class="period-tab-icon">🏠</span>
+                <div>خارج ساعات العمل</div>
+                <small>(8 ساعات)</small>
+            </div>
+        </div>
+
+        <div class="tabs">
+            <button class="tab active" onclick="switchTab('assessment')">📝 التقييم</button>
+            <button class="tab" onclick="switchTab('stats')">📊 الإحصائيات</button>
+            <button class="tab" onclick="switchTab('progress')">📈 التقدم</button>
+            <button class="tab" onclick="switchTab('history')">📋 السجل</button>
+            <button class="tab" onclick="switchTab('charts')">📉 الرسوم البيانية</button>
+        </div>
+
+        <div id="assessment-tab" class="tab-content active">
+            <div id="questions-container"></div>
+            <button class="save-btn" onclick="saveAssessment()">💾 حفظ التقييم</button>
+        </div>
+
+        <div id="stats-tab" class="tab-content">
+            <div class="stats-grid" id="stats-container"></div>
+        </div>
+
+        <div id="progress-tab" class="tab-content">
+            <div class="progress-section" id="progress-container"></div>
+        </div>
+
+        <div id="history-tab" class="tab-content">
+            <h2 class="section-title">سجل التقييمات</h2>
+            <div id="history-container"></div>
+        </div>
+
+        <div id="charts-tab" class="tab-content">
+            <div class="chart-container">
+                <canvas id="trendChart"></canvas>
+            </div>
+            <div class="chart-container">
+                <canvas id="comparisonChart"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="question_bank.js"></script>
+    <script>
+        let currentPeriod = 'work';
+        let currentAnswers = {};
+
+        function switchPeriod(period) {
+            currentPeriod = period;
+            document.querySelectorAll('.period-tab').forEach(tab => tab.classList.remove('active'));
+            document.querySelector(`[data-period="${period}"]`).classList.add('active');
+            renderQuestions();
+            loadStats();
+            loadHistory();
+        }
+
+        function switchTab(tabName) {
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+            event.target.classList.add('active');
+            document.getElementById(`${tabName}-tab`).classList.add('active');
+            
+            if (tabName === 'stats') loadStats();
+            if (tabName === 'progress') loadProgress();
+            if (tabName === 'history') loadHistory();
+            if (tabName === 'charts') loadCharts();
+        }
+
+        function getUniqueQuestions(station, count = 1) {
+            const key = `ihsan_daily_used_${currentPeriod}`;
+            const used = JSON.parse(localStorage.getItem(key) || '{}');
+            const stationUsed = used[station] || [];
+            const allQuestions = COMPLETE_QUESTION_BANK[station] || [];
+            
+            if (allQuestions.length === 0) return ["سؤال تجريبي"];
+            
+            const available = allQuestions.filter((q, idx) => !stationUsed.includes(idx));
+            if (available.length < count) {
+                used[station] = [];
+                localStorage.setItem(key, JSON.stringify(used));
+            }
+            
+            const selected = [];
+            const selectedIdx = [];
+            while (selected.length < count && selected.length < allQuestions.length) {
+                const idx = Math.floor(Math.random() * allQuestions.length);
+                if (!stationUsed.includes(idx) && !selectedIdx.includes(idx)) {
+                    selected.push(allQuestions[idx]);
+                    selectedIdx.push(idx);
+                }
+            }
+            
+            used[station] = [...(used[station] || []), ...selectedIdx].slice(-50);
+            localStorage.setItem(key, JSON.stringify(used));
+            return selected;
+        }
+
+        function renderQuestions() {
+            const stations = ["التقوى", "اليقين", "التوكل", "التسليم", "الرضا", "العبودية", "محبة الله"];
+            let html = '';
+            
+            stations.forEach(station => {
+                const questions = getUniqueQuestions(station, 1);
+                const question = questions[0];
+                html += `
+                    <div class="question-card">
+                        <span class="question-number">منزلة ${station}</span>
+                        <div class="question-text">${question}</div>
+                        <input type="range" min="0" max="10" value="5" 
+                               class="answer-slider" 
+                               data-station="${station}"
+                               oninput="updateSlider(this)">
+                        <div class="slider-value" id="value-${station}">5/10</div>
+                        <div class="slider-labels">
+                            <span>ضعيف جداً</span>
+                            <span>متوسط</span>
+                            <span>ممتاز</span>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            document.getElementById('questions-container').innerHTML = html;
+        }
+
+        function updateSlider(slider) {
+            const station = slider.dataset.station;
+            const value = parseInt(slider.value);
+            currentAnswers[station] = value;
+            document.getElementById(`value-${station}`).textContent = `${value}/10`;
+        }
+
+        function saveAssessment() {
+            const stations = ["التقوى", "اليقين", "التوكل", "التسليم", "الرضا", "العبودية", "محبة الله"];
+            const assessment = {
+                period: currentPeriod,
+                date: new Date().toISOString(),
+                answers: {}
+            };
+            
+            stations.forEach(station => {
+                const slider = document.querySelector(`[data-station="${station}"]`);
+                assessment.answers[station] = parseInt(slider.value);
+            });
+            
+            const values = Object.values(assessment.answers);
+            assessment.average = (values.reduce((a,b) => a+b, 0) / values.length).toFixed(1);
+            
+            const key = `ihsan_daily_assessments_${currentPeriod}`;
+            const assessments = JSON.parse(localStorage.getItem(key) || '[]');
+            assessments.push(assessment);
+            localStorage.setItem(key, JSON.stringify(assessments));
+            
+            alert('✅ تم حفظ التقييم بنجاح!');
+            loadStats();
+            loadHistory();
+        }
+
+        function loadStats() {
+            const key = `ihsan_daily_assessments_${currentPeriod}`;
+            const assessments = JSON.parse(localStorage.getItem(key) || '[]');
+            
+            if (assessments.length === 0) {
+                document.getElementById('stats-container').innerHTML = 
+                    '<p style="text-align:center; padding:40px">لا توجد تقييمات بعد</p>';
+                return;
+            }
+            
+            const latest = assessments[assessments.length - 1];
+            const allAvg = assessments.map(a => parseFloat(a.average));
+            const overallAvg = (allAvg.reduce((a,b) => a+b, 0) / allAvg.length).toFixed(1);
+            
+            document.getElementById('stats-container').innerHTML = `
+                <div class="stat-card">
+                    <div class="stat-emoji">📊</div>
+                    <div class="stat-value">${latest.average}</div>
+                    <div>آخر تقييم</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-emoji">📈</div>
+                    <div class="stat-value">${overallAvg}</div>
+                    <div>المتوسط العام</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-emoji">🔢</div>
+                    <div class="stat-value">${assessments.length}</div>
+                    <div>عدد التقييمات</div>
+                </div>
+            `;
+        }
+
+        function loadProgress() {
+            const key = `ihsan_daily_assessments_${currentPeriod}`;
+            const assessments = JSON.parse(localStorage.getItem(key) || '[]');
+            
+            if (assessments.length === 0) {
+                document.getElementById('progress-container').innerHTML = 
+                    '<p style="text-align:center; padding:40px">لا توجد بيانات</p>';
+                return;
+            }
+            
+            const stations = ["التقوى", "اليقين", "التوكل", "التسليم", "الرضا", "العبودية", "محبة الله"];
+            const avgByStation = {};
+            
+            stations.forEach(station => {
+                const values = assessments.map(a => a.answers[station]).filter(v => v);
+                if (values.length > 0) {
+                    avgByStation[station] = (values.reduce((a,b) => a+b, 0) / values.length).toFixed(1);
+                }
+            });
+            
+            let html = '<h3 class="section-title">متوسط كل منزلة</h3>';
+            Object.entries(avgByStation).forEach(([station, avg]) => {
+                const percent = (avg / 10 * 100).toFixed(0);
+                html += `
+                    <div class="progress-bar-wrapper">
+                        <div class="progress-label">
+                            <span>${station}</span>
+                            <span>${avg}/10</span>
+                        </div>
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: ${percent}%">${percent}%</div>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            document.getElementById('progress-container').innerHTML = html;
+        }
+
+        function loadHistory() {
+            const key = `ihsan_daily_assessments_${currentPeriod}`;
+            const assessments = JSON.parse(localStorage.getItem(key) || '[]');
+            
+            if (assessments.length === 0) {
+                document.getElementById('history-container').innerHTML = 
+                    '<p style="text-align:center; padding:40px">لا يوجد سجل</p>';
+                return;
+            }
+            
+            let html = '';
+            assessments.slice().reverse().forEach((assessment, index) => {
+                const date = new Date(assessment.date);
+                const dateStr = date.toLocaleDateString('ar-SA', { 
+                    year: 'numeric', month: 'long', day: 'numeric',
+                    hour: '2-digit', minute: '2-digit'
+                });
+                
+                html += `
+                    <div class="history-item">
+                        <div class="history-header">
+                            <div>${dateStr}</div>
+                            <div style="font-size:1.5em; font-weight:700; color:#667eea">${assessment.average}/10</div>
+                            <button class="delete-btn" onclick="deleteAssessment(${assessments.length - 1 - index})">🗑️</button>
+                        </div>
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: ${assessment.average * 10}%"></div>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            document.getElementById('history-container').innerHTML = html;
+        }
+
+        function deleteAssessment(index) {
+            if (!confirm('هل أنت متأكد من حذف هذا التقييم؟')) return;
+            
+            const key = `ihsan_daily_assessments_${currentPeriod}`;
+            const assessments = JSON.parse(localStorage.getItem(key) || '[]');
+            assessments.splice(index, 1);
+            localStorage.setItem(key, JSON.stringify(assessments));
+            loadHistory();
+            loadStats();
+        }
+
+        function loadCharts() {
+            const workData = JSON.parse(localStorage.getItem('ihsan_daily_assessments_work') || '[]');
+            const outsideData = JSON.parse(localStorage.getItem('ihsan_daily_assessments_outside') || '[]');
+            
+            const workAvg = workData.length > 0 ? 
+                (workData.reduce((sum, a) => sum + parseFloat(a.average), 0) / workData.length).toFixed(1) : 0;
+            const outsideAvg = outsideData.length > 0 ?
+                (outsideData.reduce((sum, a) => sum + parseFloat(a.average), 0) / outsideData.length).toFixed(1) : 0;
+            
+            const ctx = document.getElementById('comparisonChart');
+            if (ctx) {
+                new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: ['خلال العمل', 'خارج العمل'],
+                        datasets: [{
+                            label: 'المتوسط',
+                            data: [workAvg, outsideAvg],
+                            backgroundColor: ['#667eea', '#764ba2']
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        scales: { y: { beginAtZero: true, max: 10 } }
+                    }
+                });
+            }
+        }
+
+        window.onload = () => {
+            renderQuestions();
+            loadStats();
+        };
+    </script>
+</body>
+</html>
